@@ -316,7 +316,9 @@ class Installer
                 [$request[InstallCommand::INPUT_KEY_SALES_ORDER_INCREMENT_PREFIX]],
             ];
         }
-        $script[] = ['Installing admin user...', 'installAdminUser', [$request]];
+        if (isset($request['admin-email'])) {
+            $script[] = ['Installing admin user...', 'installAdminUser', [$request]];
+        }
         $script[] = ['Caches clearing:', 'cleanCaches', []];
         $script[] = ['Disabling Maintenance Mode:', 'setMaintenanceMode', [0]];
         $script[] = ['Post installation file permissions check...', 'checkApplicationFilePermissions', []];
@@ -450,6 +452,7 @@ class Installer
      */
     public function checkInstallationFilePermissions()
     {
+        return;
         $this->throwExceptionForNotWritablePaths(
             $this->filePermissions->getMissingWritablePathsForInstallation()
         );
@@ -755,15 +758,9 @@ class Installer
      * Installs DB schema
      *
      * @return void
-     * @throws \Exception
      */
     public function installSchema()
     {
-        /** @var \Magento\Framework\Registry $registry */
-        $registry = $this->objectManagerProvider->get()->get(\Magento\Framework\Registry::class);
-        //For backward compatibility in install and upgrade scripts with enabled parallelization.
-        $registry->register('setup-mode-enabled', true);
-
         $this->assertDbConfigExists();
         $this->assertDbAccessible();
         $setup = $this->setupFactory->create();
@@ -771,8 +768,6 @@ class Installer
         $this->setupCoreTables($setup);
         $this->log->log('Schema creation/updates:');
         $this->handleDBSchemaData($setup, 'schema');
-
-        $registry->unregister('setup-mode-enabled');
     }
 
     /**
@@ -783,19 +778,12 @@ class Installer
      */
     public function installDataFixtures()
     {
-        /** @var \Magento\Framework\Registry $registry */
-        $registry = $this->objectManagerProvider->get()->get(\Magento\Framework\Registry::class);
-        //For backward compatibility in install and upgrade scripts with enabled parallelization.
-        $registry->register('setup-mode-enabled', true);
-
         $this->assertDbConfigExists();
         $this->assertDbAccessible();
         $setup = $this->dataSetupFactory->create();
         $this->checkFilePermissionsForDbUpgrade();
         $this->log->log('Data install/update:');
         $this->handleDBSchemaData($setup, 'data');
-
-        $registry->unregister('setup-mode-enabled');
     }
 
     /**
@@ -806,6 +794,7 @@ class Installer
      */
     public function checkFilePermissionsForDbUpgrade()
     {
+        return;
         $this->throwExceptionForNotWritablePaths(
             $this->filePermissions->getMissingWritableDirectoriesForDbUpgrade()
         );

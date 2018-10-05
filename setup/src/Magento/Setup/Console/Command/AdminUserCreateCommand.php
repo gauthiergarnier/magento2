@@ -170,20 +170,20 @@ class AdminUserCreateCommand extends AbstractSetupCommand
     public function getOptionsList()
     {
         return [
-            new InputOption(AdminAccount::KEY_USER, null, InputOption::VALUE_REQUIRED, '(Required) Admin user'),
-            new InputOption(AdminAccount::KEY_PASSWORD, null, InputOption::VALUE_REQUIRED, '(Required) Admin password'),
-            new InputOption(AdminAccount::KEY_EMAIL, null, InputOption::VALUE_REQUIRED, '(Required) Admin email'),
+            new InputOption(AdminAccount::KEY_USER, null, InputOption::VALUE_OPTIONAL, 'Admin user'),
+            new InputOption(AdminAccount::KEY_PASSWORD, null, InputOption::VALUE_OPTIONAL, 'Admin password'),
+            new InputOption(AdminAccount::KEY_EMAIL, null, InputOption::VALUE_OPTIONAL, 'Admin email'),
             new InputOption(
                 AdminAccount::KEY_FIRST_NAME,
                 null,
-                InputOption::VALUE_REQUIRED,
-                '(Required) Admin first name'
+                InputOption::VALUE_OPTIONAL,
+                'Admin first name'
             ),
             new InputOption(
                 AdminAccount::KEY_LAST_NAME,
                 null,
-                InputOption::VALUE_REQUIRED,
-                '(Required) Admin last name'
+                InputOption::VALUE_OPTIONAL,
+                'Admin last name'
             ),
         ];
     }
@@ -196,6 +196,7 @@ class AdminUserCreateCommand extends AbstractSetupCommand
      */
     public function validate(InputInterface $input)
     {
+        return [];
         $errors = [];
         $user = new \Magento\Framework\DataObject();
         $user->setFirstname($input->getOption(AdminAccount::KEY_FIRST_NAME))

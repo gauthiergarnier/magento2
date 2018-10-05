@@ -1,0 +1,64 @@
+name: magento
+
+type: php:7.1
+
+runtime:
+    extensions:
+        - mcrypt
+        - xsl
+
+build:
+    flavor: composer
+
+
+hooks:
+    build: |
+        ln -sfn "$PLATFORM_APP_DIR"/.config/env.php "$PLATFORM_APP_DIR"/app/etc/env.php
+        ln -sfn "$PLATFORM_APP_DIR"/.config/config.php "$PLATFORM_APP_DIR"/app/etc/config.php
+    deploy: ./deploy
+
+relationships:
+    database: mysqldb:mysql
+    redis: rediscache:redis
+
+disk: 2048
+
+mounts:
+    "/var": "shared:files/var"
+    "/generated": "shared:files/generated"
+    "/pub/media": "shared:files/media"
+    "/pub/static": "shared:files/static"
+    "/.config": "shared:files/config"
+    "/app/etc": "shared:files/etc" 
+crons:
+    magento:
+        spec: "* * * * *"
+        cmd: "php bin/magento cron:run"
+
+web:
+    locations:
+        '/':
+            root: "pub"
+            passthru: "/index.php"
+            index:
+                - index.php
+            scripts: true
+            allow: false
+            rules:
+                \.(css|js|gif|jpe?g|svg):
+                    allow: true
+        '/media':
+            root: "pub/media"
+            allow: true
+            scripts: false
+            passthru: "/get.php"
+            expires: 1y
+        '/static':
+            root: "pub/static"
+            allow: true
+            scripts: false
+            passthru: "/static-versioned.php"
+            expires: 1y
+            rules:
+                ^/static/version\d+/(?<resource>.*)$:
+                    passthru: "/static/$resource"
